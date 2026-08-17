@@ -42,6 +42,8 @@
   --line:#E0E8FA;
   --ev:#2E5BFF;
   --ofis:#06AECF;
+  --aybike:#E0409B;
+  --ekitap:#0FA36B;
   --hit:#E5333D;
   --shadow:0 1px 2px rgba(10,22,51,.05), 0 6px 18px -10px rgba(46,91,255,.28);
   --shadow-up:0 2px 4px rgba(10,22,51,.06), 0 16px 34px -14px rgba(46,91,255,.45);
@@ -95,7 +97,6 @@ body::before{
   box-shadow:var(--shadow);transition:transform .14s,box-shadow .14s,color .14s;
 }
 .ubtn:hover{transform:translateY(-1px);box-shadow:var(--shadow-up)}
-.ubtn[data-load="ofis"]{color:var(--ofis)}
 .srcline{font-size:.72rem;color:var(--faint);text-align:right}
 .srcline b{color:var(--muted);font-weight:600}
 .srcline .x{background:none;border:none;color:var(--faint);cursor:pointer;font:600 .78rem var(--sans);padding:0 2px}
@@ -181,6 +182,8 @@ body::before{
 .lib[aria-pressed="true"][data-lib="all"]{background:linear-gradient(135deg,#0A1633,#26355E)}
 .lib[aria-pressed="true"][data-lib="ev"]{background:linear-gradient(135deg,#2E5BFF,#6C4BFF);box-shadow:0 8px 20px -10px rgba(46,91,255,.9)}
 .lib[aria-pressed="true"][data-lib="ofis"]{background:linear-gradient(135deg,#06AECF,#2E8BFF);box-shadow:0 8px 20px -10px rgba(6,174,207,.9)}
+.lib[aria-pressed="true"][data-lib="aybike"]{background:linear-gradient(135deg,#E0409B,#B44BE8);box-shadow:0 8px 20px -10px rgba(224,64,155,.9)}
+.lib[aria-pressed="true"][data-lib="ekitap"]{background:linear-gradient(135deg,#0FA36B,#12B9A0);box-shadow:0 8px 20px -10px rgba(15,163,107,.9)}
 .lib:focus-visible,.ubtn:focus-visible,.clear:focus-visible,.seg:focus-visible{outline:2px solid var(--ev);outline-offset:2px}
 
 /* ——— Raf şeridi ——— */
@@ -193,6 +196,8 @@ body::before{
 }
 .rlabel[data-lib="ev"]{color:var(--ev)}
 .rlabel[data-lib="ofis"]{color:var(--ofis)}
+.rlabel[data-lib="aybike"]{color:var(--aybike)}
+.rlabel[data-lib="ekitap"]{color:var(--ekitap)}
 .ribbon{
   flex:1;min-width:0;display:flex;gap:3px;height:34px;align-items:stretch;
   overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;
@@ -240,6 +245,10 @@ body::before{
 .ubtn.calisiyor .bi{animation:donuyor .9s linear infinite}
 @keyframes donuyor{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.ubtn.calisiyor .bi{animation:none}}
+
+.field label{display:flex;align-items:center;gap:6px}
+.field label .bi{width:1em;height:1em}
+.btn.small{padding:0 13px}
 
 /* ——— Liste ——— */
 main{max-width:1180px;margin:0 auto;padding:26px 22px 100px}
@@ -300,6 +309,10 @@ mark{background:rgba(46,91,255,.18);color:var(--ev);border-radius:3px;padding:0 
 }
 .zone[data-lib="ev"].hot{border-color:var(--ev);background:rgba(46,91,255,.12);color:var(--ev);transform:scale(1.01)}
 .zone[data-lib="ofis"].hot{border-color:var(--ofis);background:rgba(6,174,207,.12);color:var(--ofis);transform:scale(1.01)}
+.zone[data-lib="aybike"].hot{border-color:var(--aybike);background:rgba(224,64,155,.12);color:var(--aybike);transform:scale(1.01)}
+.zone[data-lib="ekitap"].hot{border-color:var(--ekitap);background:rgba(15,163,107,.12);color:var(--ekitap);transform:scale(1.01)}
+.drop .zone{font-size:1.05rem;gap:8px;flex-direction:column}
+.drop .zone .bi{width:26px;height:26px}
 
 /* ——— Şifre Modalı ——— */
 .modal-overlay{
@@ -372,24 +385,9 @@ mark{background:rgba(46,91,255,.18);color:var(--ev);border-radius:3px;padding:0 
       <h3>Kaynak bağlantıları</h3>
       <p class="sub">Google E-Tablolar adresini yapıştır: site her açılışta ve sekmeye her dönüşünde oradan okur, tabloyu güncellediğin an her cihazda güncel olur.
       Tablonun paylaşımı <b>“bağlantıya sahip herkes — görüntüleyebilir”</b> olmalı. Bağlantı yerine aşağıdan Excel dosyası da yükleyebilirsin; o zaman liste yalnızca bu tarayıcıda saklanır.</p>
-      <div class="field">
-        <label for="urlEv">Ev kitaplığı <i>— Sheets bağlantısı ya da yayımlanmış CSV</i></label>
-        <div class="field-row">
-          <input id="urlEv" type="url" placeholder="https://docs.google.com/spreadsheets/d/…" spellcheck="false">
-          <button class="btn ghost small" data-clear="ev" type="button">Kaldır</button>
-        </div>
-      </div>
-      <div class="field">
-        <label for="urlOfis">Ofis kitaplığı <i>— Sheets bağlantısı ya da yayımlanmış CSV</i></label>
-        <div class="field-row">
-          <input id="urlOfis" type="url" placeholder="https://docs.google.com/spreadsheets/d/…" spellcheck="false">
-          <button class="btn ghost small" data-clear="ofis" type="button">Kaldır</button>
-        </div>
-      </div>
+      <div id="kaynakAlanlari"></div>
       <div class="acts">
         <button class="btn" id="save" type="button">Kaydet ve çek</button>
-        <button class="btn ghost" data-load="ev" type="button"><svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M7.5 6.707 6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0z"/></svg><span>Ev dosyası</span></button>
-        <button class="btn ghost" data-load="ofis" type="button"><svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M7.5 6.707 6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0z"/></svg><span>Ofis dosyası</span></button>
         <button class="btn ghost" data-defaults="1" type="button"><svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/></svg><span>Varsayılan adresler</span></button>
         <span class="spacer"></span>
         <button class="btn danger" data-clear-all="1" type="button">Her şeyi temizle</button>
@@ -423,8 +421,7 @@ mark{background:rgba(46,91,255,.18);color:var(--ev);border-radius:3px;padding:0 
 </main>
 
 <div class="drop" id="drop">
-  <div class="zone" data-lib="ev">Ev kitaplığına bırak</div>
-  <div class="zone" data-lib="ofis">Ofis kitaplığına bırak</div>
+  <!-- bırakma alanları JS tarafından üretilir -->
 </div>
 
 <div class="modal-overlay" id="authModal" hidden>
@@ -516,22 +513,32 @@ function askAuth(){
 }
 
 const VARSAYILAN_KAYNAKLAR = {
-  "ev":   "https://docs.google.com/spreadsheets/d/1QD1AGlyCfygStsfRiUkpEaEp6VGmO9ZOtczLd9llLQk/edit?usp=sharing",
-  "ofis": "https://docs.google.com/spreadsheets/d/1LGZ7gs9yNmEDga4k6ITgAoMZuamVzx-nsNJ6aYwt5WQ/edit?usp=sharing"
+  "ev":     "https://docs.google.com/spreadsheets/d/1QD1AGlyCfygStsfRiUkpEaEp6VGmO9ZOtczLd9llLQk/edit?usp=sharing",
+  "ofis":   "https://docs.google.com/spreadsheets/d/1LGZ7gs9yNmEDga4k6ITgAoMZuamVzx-nsNJ6aYwt5WQ/edit?usp=sharing",
+  "aybike": "",
+  "ekitap": ""
 };
 
 /* ═══ Bootstrap Icons (MIT) — gömülü SVG, dış bağımlılık yok ═══ */
 const IKON = {
   yukle: '<svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M7.5 6.707 6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0z"/></svg>',
   ev:   '<svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/></svg>',
-  ofis: '<svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5M4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"/></svg>'
+  ofis: '<svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5M4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"/></svg>',
+  /* Aybike — balloon-fill */
+  aybike: '<svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8.48 10.901C11.211 10.227 13 7.837 13 5A5 5 0 0 0 3 5c0 2.837 1.789 5.227 4.52 5.901l-.244.487a.25.25 0 1 0 .448.224l.04-.08c.009.17.024.315.051.45.068.344.208.622.448 1.102l.013.028c.212.422.182.85.05 1.246-.135.402-.366.751-.534 1.003a.25.25 0 0 0 .416.278l.004-.007c.166-.248.431-.646.588-1.115.16-.479.212-1.051-.076-1.629-.258-.515-.365-.732-.419-1.004a2 2 0 0 1-.037-.289l.008.017a.25.25 0 1 0 .448-.224zM4.352 3.356a4 4 0 0 1 3.15-2.325C7.774.997 8 1.224 8 1.5s-.226.496-.498.542c-.95.162-1.749.78-2.173 1.617a.6.6 0 0 1-.52.341c-.346 0-.599-.329-.457-.644"/></svg>',
+  /* E-Kitap — file-earmark-fill. Gerçek PDF simgesini istersen
+     icons.getbootstrap.com/icons/file-earmark-pdf-fill adresindeki
+     SVG'yi kopyalayıp bu satırdaki tırnak arasına yapıştır. */
+  ekitap: '<svg class="bi" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 0h5.293A1 1 0 0 1 10 .293L13.707 4a1 1 0 0 1 .293.707V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2m5.5 1.5v2a1 1 0 0 0 1 1h2z"/></svg>'
 };
 
 const LIBS={
-  ev:  {key:'ev',  label:'Ev',  books:[], src:null, h0:228, h1:274},
-  ofis:{key:'ofis',label:'Ofis',books:[], src:null, h0:186, h1:214}
+  ev:     {key:'ev',     label:'Ev',      books:[], src:null, h0:228, h1:258},
+  ofis:   {key:'ofis',   label:'Ofis',    books:[], src:null, h0:186, h1:208},
+  aybike: {key:'aybike', label:'Aybike',  books:[], src:null, h0:318, h1:342},
+  ekitap: {key:'ekitap', label:'E-Kitap', books:[], src:null, h0:150, h1:172}
 };
-const ORDER=['ev','ofis'];
+const ORDER=['ev','ofis','aybike','ekitap'];
 let ALL=[], cat='all', shelf=null, wasEmpty=true;
 
 function noteOf(lib,s){
@@ -744,8 +751,7 @@ function paintVoid(n){
       +'Ya da bilgisayarındaki Excel dosyasını yüklersin; o zaman liste bu tarayıcıda saklanır.</p>'
       +'<p>Her iki yolda da sütunlar şöyle olmalı: <b>Raf No · Yazar / Derleyen · Kitap İsmi · Yayınevi</b>.</p>'
       +'<div class="acts"><button data-open-panel="1">Kaynakları bağla</button>'
-      +'<button class="ghost" data-load="ev">'+IKON.yukle+' Ev dosyası</button>'
-      +'<button class="ghost" data-load="ofis">'+IKON.yukle+' Ofis dosyası</button></div>';
+      +'</div>';
   }else if(cat!=='all'&&!LIBS[cat].books.length){
     voidEl.innerHTML='<h2>'+LIBS[cat].label+' kitaplığı henüz boş.</h2>'
       +'<p>Bu kitaplık için ayrı bir E-Tablo bağlantısı verebilir ya da Excel dosyası yükleyebilirsin. '
@@ -893,7 +899,28 @@ function readFile(f,lib){
 
 /* ——— Panel ——— */
 const panelEl=document.getElementById('panel'),
-      urlEls={ev:document.getElementById('urlEv'),ofis:document.getElementById('urlOfis')};
+      kaynakAlanlariEl=document.getElementById('kaynakAlanlari'),
+      urlEls={};
+
+/* Kaynak alanları kategori listesinden üretilir — yeni kategori eklemek
+   ORDER ve LIBS'e birer satır yazmaktan ibarettir. */
+function kaynakAlanlariniKur(){
+  kaynakAlanlariEl.innerHTML='';
+  for(const k of ORDER){
+    const L=LIBS[k];
+    const alan=document.createElement('div');alan.className='field';
+    alan.innerHTML='<label for="url-'+k+'">'+(IKON[k]||'')+' '+esc(L.label)
+      +' <i>— Sheets bağlantısı ya da yayımlanmış CSV</i></label>'
+      +'<div class="field-row">'
+      +'<input id="url-'+k+'" type="url" placeholder="https://docs.google.com/spreadsheets/d/…" spellcheck="false">'
+      +'<button class="btn ghost small" data-load="'+k+'" type="button" title="Excel dosyası yükle">Dosya</button>'
+      +'<button class="btn ghost small" data-clear="'+k+'" type="button">Kaldır</button>'
+      +'</div>';
+    kaynakAlanlariEl.appendChild(alan);
+    urlEls[k]=alan.querySelector('input');
+  }
+}
+kaynakAlanlariniKur();
 
 function togglePanel(open){
   panelEl.hidden = open===undefined ? !panelEl.hidden : !open;
@@ -994,6 +1021,15 @@ document.addEventListener('click',async e=>{
 
 /* ——— Sürükle-bırak ——— */
 const dropEl=document.getElementById('drop');
+
+/* Bırakma alanları da kategori listesinden üretilir */
+for(const k of ORDER){
+  const z=document.createElement('div');
+  z.className='zone';z.dataset.lib=k;
+  z.innerHTML=(IKON[k]||'')+'<span>'+esc(LIBS[k].label)+'</span>';
+  dropEl.appendChild(z);
+}
+
 let depth=0;
 window.addEventListener('dragenter',e=>{e.preventDefault();depth++;dropEl.classList.add('on');});
 window.addEventListener('dragover',e=>e.preventDefault());
