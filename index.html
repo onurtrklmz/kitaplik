@@ -281,6 +281,14 @@ main{max-width:1180px;margin:0 auto;padding:26px 22px 100px}
 }
 mark{background:rgba(46,91,255,.18);color:var(--ev);border-radius:3px;padding:0 2px;font-weight:600}
 
+.daha{display:flex;align-items:center;gap:14px;justify-content:center;padding:8px 0 4px}
+.daha button{
+  font:600 .84rem var(--sans);color:#fff;background:linear-gradient(135deg,#2E5BFF,#6C4BFF);
+  border:none;border-radius:999px;padding:12px 24px;cursor:pointer;
+  box-shadow:0 10px 22px -12px rgba(46,91,255,1);
+}
+.daha span{font-size:.78rem;color:var(--faint);font-variant-numeric:tabular-nums}
+
 /* ——— Boş durum ——— */
 .void{
   background:var(--surface);border:1px solid var(--line);border-radius:20px;
@@ -515,8 +523,8 @@ function askAuth(){
 const VARSAYILAN_KAYNAKLAR = {
   "ev":     "https://docs.google.com/spreadsheets/d/1QD1AGlyCfygStsfRiUkpEaEp6VGmO9ZOtczLd9llLQk/edit?usp=sharing",
   "ofis":   "https://docs.google.com/spreadsheets/d/1LGZ7gs9yNmEDga4k6ITgAoMZuamVzx-nsNJ6aYwt5WQ/edit?usp=sharing",
-  "aybike": "https://docs.google.com/spreadsheets/d/12nyHocpIyQPgTEYganZdTti15RGP_icXObwyEw0locQ/edit?usp=sharing",
-  "ekitap": "https://docs.google.com/spreadsheets/d/14Z49SEb0iPXlgqjtEp-qM2MZX8i2BZFFKrRQYDdIlCI/edit?usp=sharing"
+  "aybike": "https://docs.google.com/spreadsheets/d/12nyHocpIyQPgTEYganZdTti15RGP_icXObwyEw0locQ/edit?usp=drive_link",
+  "ekitap": "https://docs.google.com/spreadsheets/d/14Z49SEb0iPXlgqjtEp-qM2MZX8i2BZFFKrRQYDdIlCI/edit?usp=drive_link"
 };
 
 /* ═══ Bootstrap Icons (MIT) — gömülü SVG, dış bağımlılık yok ═══ */
@@ -540,6 +548,8 @@ const LIBS={
 };
 const ORDER=['ev','ofis','aybike','ekitap'];
 let ALL=[], cat='all', shelf=null, wasEmpty=true;
+const SAYFA=300;      /* bir seferde çizilecek kart sayısı */
+let gosterilen=SAYFA;
 
 function noteOf(lib,s){
   const L=LIBS[lib];
@@ -570,6 +580,8 @@ function prepare(){
   for(const k of ORDER){
     const L=LIBS[k];
     L.shelves=[...new Set(L.books.map(b=>b.s))];
+    L.toplam={};
+    for(const b of L.books) L.toplam[b.s]=(L.toplam[b.s]||0)+1;
     L.sheetNotes={};
     for(const b of L.books) if(b.e && !L.sheetNotes[b.s]) L.sheetNotes[b.s]=b.e;
     L.hues={}; L.shelves.forEach((s,i)=>L.hues[s]=hue(k,i,L.shelves.length));
@@ -633,6 +645,9 @@ function paintLibTabs(){
 /* ——— Raf şeridi ——— */
 function paintRibbon(hits,searching){
   const scope = cat==='all'?ORDER:[cat];
+  /* tek geçişte sayım — büyük listelerde tarama yapmamak için */
+  const say=new Map();
+  for(const b of hits){const kk=b.lib+'|'+b.s; say.set(kk,(say.get(kk)||0)+1);}
   ribbonEl.innerHTML='';
   let any=false;
   for(const k of scope){
@@ -647,8 +662,8 @@ function paintRibbon(hits,searching){
     strip.setAttribute('role','group');
     strip.setAttribute('aria-label',L.label+' rafları');
     for(const s of L.shelves){
-      const total=L.books.filter(b=>b.s===s).length;
-      const n=hits.filter(b=>b.lib===k&&b.s===s).length;
+      const total=L.toplam[s]||0;
+      const n=say.get(k+'|'+s)||0;
       const h=L.hues[s];
       const isHit=searching&&n>0;
       const b=document.createElement('button');
@@ -690,8 +705,11 @@ function mark(orig,folded,tokens){
 }
 
 /* ——— Çizim ——— */
+let sonSuzgec='';
 function render(){
   const raw=qEl.value.trim();
+  const suzgec=raw+'|'+cat+'|'+shelf;
+  if(suzgec!==sonSuzgec){sonSuzgec=suzgec;gosterilen=SAYFA;}
   const tokens=fold(raw).split(/\s+/).filter(Boolean);
   seekEl.classList.toggle('has-value',raw.length>0);
 
@@ -704,19 +722,27 @@ function render(){
 
   paintRibbon(searched, tokens.length>0);
 
-  const per=ORDER.map(k=>({k,n:hits.filter(b=>b.lib===k).length})).filter(p=>p.n);
+  /* tek geçişte sayım: kitaplık başına ve raf başına */
+  const perSay={}, grupSay=new Map();
+  for(const b of hits){
+    perSay[b.lib]=(perSay[b.lib]||0)+1;
+    const kk=b.lib+'|'+b.s; grupSay.set(kk,(grupSay.get(kk)||0)+1);
+  }
+  const per=ORDER.map(k=>({k,n:perSay[k]||0})).filter(p=>p.n);
   tallyEl.innerHTML = (!tokens.length&&cat==='all'&&!shelf)
     ? '<b>'+ALL.length+'</b> kitap · '+ORDER.map(k=>LIBS[k].label+' '+LIBS[k].books.length).join(' · ')
     : '<b>'+hits.length+'</b> / '+ALL.length+' kitap'+(raw?' · “'+esc(raw)+'”':'')+(per.length?' · '+per.map(p=>LIBS[p.k].label+' '+p.n).join(' · '):'');
   hintEl.textContent = (shelf||cat!=='all') ? 'Süzgeci kaldırmak için tekrar tıkla' : 'Raflara tıklayarak süzebilirsin';
 
+  /* Büyük listelerde tarayıcıyı kilitlememek için kademeli çizim */
+  const dilim=hits.slice(0,gosterilen);
   const frag=document.createDocumentFragment();
   let gk=null,cardsEl=null;
-  for(const b of hits){
+  for(const b of dilim){
     const key=b.lib+'|'+b.s;
     if(key!==gk){
       gk=key;
-      const n=hits.filter(x=>x.lib===b.lib&&x.s===b.s).length;
+      const n=grupSay.get(key)||0;
       const g=document.createElement('section');g.className='group';
       const head=document.createElement('div');head.className='group-head';
       head.innerHTML='<span class="dot" style="background:'+col(b.h)+'"></span>'
@@ -735,7 +761,24 @@ function render(){
       +'<span class="pill" style="color:'+col(b.h)+';background:'+col(b.h,.12)+'">'+esc(b.s)+'</span></div>';
     cardsEl.appendChild(c);
   }
+  /* grup başlıklarındaki sayı, süzgeçteki toplamı gösterir; dilim değil */
   listEl.replaceChildren(frag);
+
+  const kalan=hits.length-dilim.length;
+  if(kalan>0){
+    const d=document.createElement('div');d.className='daha';
+    d.innerHTML='<button type="button">'+kalan.toLocaleString('tr-TR')+' kitap daha göster</button>'
+      +'<span>'+dilim.length.toLocaleString('tr-TR')+' / '+hits.length.toLocaleString('tr-TR')+'</span>';
+    d.querySelector('button').onclick=()=>{gosterilen+=SAYFA;render();};
+    listEl.appendChild(d);
+    /* aşağı kaydırınca kendiliğinden devam etsin */
+    if('IntersectionObserver' in window){
+      const io=new IntersectionObserver(g=>{
+        if(g[0].isIntersecting){io.disconnect();gosterilen+=SAYFA;render();}
+      },{rootMargin:'600px'});
+      io.observe(d);
+    }
+  }
   paintVoid(hits.length);
 }
 
